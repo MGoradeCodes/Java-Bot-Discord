@@ -26,7 +26,7 @@ public class SlashCommandListener extends ListenerAdapter {
 
                 event.deferReply().queue();
                 event.getHook()
-                        .editOriginal("☕ Brewing your Java knowledge...")
+                        .editOriginal("☕ Brewing my Java knowledge...(Java is the best.....)")
                         .queue();
 
                 var conceptOption = event.getOption("concepts");
