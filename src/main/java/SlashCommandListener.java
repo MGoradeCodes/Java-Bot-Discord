@@ -1,13 +1,35 @@
-import com.google.genai.types.CreateCachedContentConfig;
-import com.google.genai.types.GenerateContentResponse;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 
 public class SlashCommandListener extends ListenerAdapter {
     private final HashMap<String, String> cachedAnswers = new HashMap<>();
     private final GeminiService gemini = new GeminiService();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final File cacheFile = new File("data/cache.json");
+
+    public SlashCommandListener() {
+
+        cacheFile.getParentFile().mkdirs();
+
+        if (cacheFile.exists()) {
+            try {
+                cachedAnswers.putAll(
+                        objectMapper.readValue(
+                                cacheFile,
+                                new TypeReference<HashMap<String, String>>() {}
+                        )
+                );
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
@@ -62,6 +84,12 @@ public class SlashCommandListener extends ListenerAdapter {
                     );
 
                     cachedAnswers.put(question, answer);
+                    try {
+                        objectMapper.writerWithDefaultPrettyPrinter()
+                                .writeValue(cacheFile, cachedAnswers);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
 
                 } else {
 
