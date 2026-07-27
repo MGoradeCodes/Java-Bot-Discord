@@ -53,7 +53,7 @@ public class DiscordBot {
         jda.updateCommands()
                 .addCommands(
                         Commands.slash("java", "Intro")
-                                .addOption(OptionType.STRING, "username", "simple intro name", true)
+                                .addOption(OptionType.STRING, "username", "simple intro name")
                                 .setContexts(InteractionContextType.ALL)
                                 .setIntegrationTypes(IntegrationType.GUILD_INSTALL, IntegrationType.USER_INSTALL),
 
