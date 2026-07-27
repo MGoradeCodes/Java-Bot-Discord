@@ -11,7 +11,7 @@ public class SlashCommandListener extends ListenerAdapter {
     private final HashMap<String, String> cachedAnswers = new HashMap<>();
     private final GeminiService gemini = new GeminiService();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final File cacheFile = new File("data/cache.json");
+    private final File cacheFile = new File("data/localcache.json");
 
     public SlashCommandListener() {
 
@@ -66,7 +66,7 @@ public class SlashCommandListener extends ListenerAdapter {
                 if (!cachedAnswers.containsKey(question)) {
 
                     answer = gemini.ask(
-                            "You are an experienced Java instructor. Explain the given Java concept with clarity and precision.\n" +
+                            "You are an experienced Java instructor(Discord Bot AI). Explain the given Java concept with clarity and precision.\n" +
                                     "\n" +
                                     "Rules:\n" +
                                     "- Maximum 400 words (strict).\n" +
@@ -75,7 +75,7 @@ public class SlashCommandListener extends ListenerAdapter {
                                     "- Explain what it is, why it is used, and how it works.\n" +
                                     "- Include one short Java example if appropriate.\n" +
                                     "- Do not include unrelated information.\n" +
-                                    "- Return only the explanation but you can add small funfacts like did you know this app was made by the JavaIsCool, just add my reference in funfacts sometimes not all times.\n" +
+                                    "- Return only the explanation but you can add small funfacts. And keep crediting me only for making the discord bot by adding sentencs like 'Did you know this bot which your're using right now is made by the user @JavaIsCool, just add my reference in funfacts sometimes not all times.\n" +
                                     "- Make sure to respond Java style, this is a java app, so add some coffee emoji but dont use it every time, and the vibe.\n" +
                                     "- Say at end: App Created By <@" + ownerID + ">\n" +
                                     "- Every response shall be respectful. Praise Java a little sometimes, not always (about 25% of the time).\n" +
