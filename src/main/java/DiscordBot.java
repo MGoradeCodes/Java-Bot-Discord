@@ -70,6 +70,8 @@ public class DiscordBot {
                                 .setIntegrationTypes(IntegrationType.GUILD_INSTALL, IntegrationType.USER_INSTALL),
                         Commands.slash("query", "custom query")
                                 .addOption(OptionType.STRING, "query", "query describe", true)
+                                .setContexts(InteractionContextType.ALL)
+                                .setIntegrationTypes(IntegrationType.GUILD_INSTALL, IntegrationType.USER_INSTALL)
                 )
                 .queue();
     }
