@@ -53,7 +53,7 @@ public class DiscordBot {
         jda.updateCommands()
                 .addCommands(
                         Commands.slash("java", "Intro")
-                                .addOption(OptionType.STRING, "username", "simple intro name")
+                                .addOption(OptionType.STRING, "username", "simple intro name"   )
                                 .setContexts(InteractionContextType.ALL)
                                 .setIntegrationTypes(IntegrationType.GUILD_INSTALL, IntegrationType.USER_INSTALL),
 
@@ -67,7 +67,9 @@ public class DiscordBot {
                         Commands.slash("learn", "learning topics")
                                 .addOptions(concepts)
                                 .setContexts(InteractionContextType.ALL)
-                                .setIntegrationTypes(IntegrationType.GUILD_INSTALL, IntegrationType.USER_INSTALL)
+                                .setIntegrationTypes(IntegrationType.GUILD_INSTALL, IntegrationType.USER_INSTALL),
+                        Commands.slash("query", "custom query")
+                                .addOption(OptionType.STRING, "query", "query describe", true)
                 )
                 .queue();
     }

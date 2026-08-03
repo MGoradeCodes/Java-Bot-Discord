@@ -6,7 +6,7 @@ public class MessageListener extends ListenerAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         super.onMessageReceived(event);
 
-        System.out.println("Message Received From: "+event.getAuthor() +"\nMessage Was " + event.getMessage().getContentRaw());
+        System.out.println("Message Received From: "+event.getAuthor() +"\nMessage Ws " + event.getMessage().getContentRaw());
         String message = event.getMessage().getContentRaw();
 
         if(message.equalsIgnoreCase("hello")) {

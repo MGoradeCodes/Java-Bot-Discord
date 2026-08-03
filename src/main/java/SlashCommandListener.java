@@ -61,6 +61,7 @@ public class SlashCommandListener extends ListenerAdapter {
                 String ownerID = "1245995882680156199";
                 String question = conceptOption.getAsString();
 
+
                 String answer;
 
                 if (!cachedAnswers.containsKey(question)) {
@@ -102,6 +103,29 @@ public class SlashCommandListener extends ListenerAdapter {
                 }
 
                 event.getHook().editOriginal(answer).queue();
+
+                break;
+
+            case "query":
+                event.deferReply().queue(); // acknowledge immediately
+
+                String customized = event.getOption("query").getAsString();
+
+                String prompt = "You are a a discord bot named JavaBot, and you were made by user @JavaIsCool. Answer directly and keep it under 250 words.\n\nQuestion: "
+                        + customized;
+
+                try {
+                    String reply = gemini.ask(prompt);
+
+                    event.getHook().editOriginal(reply).queue();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+
+                    event.getHook().editOriginal(
+                            "⚠️ AI service is temporarily unavailable. Please try again."
+                    ).queue();
+                }
 
                 break;
 
