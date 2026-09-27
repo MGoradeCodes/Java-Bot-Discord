@@ -1,5 +1,6 @@
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.interactions.InteractionContextType;
 import net.dv8tion.jda.api.interactions.IntegrationType;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -16,6 +17,7 @@ public class DiscordBot {
         }
 
         JDABuilder jdaBuilder = JDABuilder.createDefault(token);
+        jdaBuilder.setActivity(Activity.playing("Coding in Java"));
         JDA jda = jdaBuilder
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MESSAGES)
                 .addEventListeners(new ReadyEventListener(), new MessageListener(), new SlashCommandListener())
@@ -48,8 +50,11 @@ public class DiscordBot {
         concepts.addChoice("Iteration", "interation");
 
         jda.awaitReady();
+        jda.retrieveCommands().queue(commands -> {
+            System.out.println("Global commands registered:");
+            commands.forEach(cmd -> System.out.println(cmd.getName()));
+        });
 
-        // JDA 6.5.0 Global Slash Command Registration
         jda.updateCommands()
                 .addCommands(
                         Commands.slash("java", "Intro")
@@ -68,10 +73,12 @@ public class DiscordBot {
                                 .addOptions(concepts)
                                 .setContexts(InteractionContextType.ALL)
                                 .setIntegrationTypes(IntegrationType.GUILD_INSTALL, IntegrationType.USER_INSTALL),
+
                         Commands.slash("query", "custom query")
                                 .addOption(OptionType.STRING, "query", "query describe", true)
                                 .setContexts(InteractionContextType.ALL)
-                                .setIntegrationTypes(IntegrationType.GUILD_INSTALL, IntegrationType.USER_INSTALL)
+                                .setIntegrationTypes(IntegrationType.GUILD_INSTALL, IntegrationType.USER_INSTALL),
+                        Commands.slash("viewtokens", "view left api tokens")
                 )
                 .queue();
     }
