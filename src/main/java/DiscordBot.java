@@ -78,8 +78,17 @@ public class DiscordBot {
                                 .addOption(OptionType.STRING, "query", "query describe", true)
                                 .setContexts(InteractionContextType.ALL)
                                 .setIntegrationTypes(IntegrationType.GUILD_INSTALL, IntegrationType.USER_INSTALL),
-                        Commands.slash("viewtokens", "view left api tokens")
+                        Commands.slash("viewtokens", "view left api tokens"),
+                        Commands.slash("askwithsearch", "custom search query")
+                                .addOption(OptionType.STRING, "query", "query describe", true)
+                                .setContexts(InteractionContextType.ALL)
+                                .setIntegrationTypes(IntegrationType.GUILD_INSTALL, IntegrationType.USER_INSTALL)
                 )
                 .queue();
+    }
+
+
+    public static void Debug(String text){
+        System.out.println(text);
     }
 }

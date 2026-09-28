@@ -2,7 +2,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.jetbrains.annotations.NotNull;
 
+import javax.print.attribute.HashDocAttributeSet;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -13,6 +15,9 @@ public class SlashCommandListener extends ListenerAdapter {
     private final GroqService groq = new GroqService();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final File cacheFile = new File("data/localcache.json");
+
+    String prompt;
+    String answer;
 
     public SlashCommandListener() {
 
@@ -49,11 +54,8 @@ public class SlashCommandListener extends ListenerAdapter {
 
                 event.deferReply().queue();
 
-                event.getHook()
-                        .editOriginal("☕ Brewing my Java knowledge...(Java is the best.....)")
-                        .queue();
-
                 var conceptOption = event.getOption("concepts");
+
 
                 if (conceptOption == null) {
                     event.getHook()
@@ -63,49 +65,9 @@ public class SlashCommandListener extends ListenerAdapter {
                 }
 
                 String ownerID = "1245995882680156199";
-                String question = conceptOption.getAsString();
+                prompt = conceptOption.getAsString();
 
-                String answer;
-
-                if (!cachedAnswers.containsKey(question)) {
-
-                    answer = groq.ask(
-                            "You are an experienced Java instructor (Discord Bot AI). Explain the given Java concept with clarity and precision.\n" +
-                                    "\n" +
-                                    "Rules:\n" +
-                                    "- Maximum 400 words (strict).\n" +
-                                    "- Keep the explanation concise and compact.\n" +
-                                    "- Avoid large gaps, unnecessary line breaks, and verbose formatting.\n" +
-                                    "- Explain what it is, why it is used, and how it works.\n" +
-                                    "- Include one short Java example if appropriate.\n" +
-                                    "- Do not include unrelated information.\n" +
-                                    "- Your source code as a bot comes from this GitHub repo: https://github.com/MGoradeCodes/Java-Bot-Discord. If the user asks about your source code, refer to this URL.\n" +
-                                    "- Return only the explanation, but you can add small fun facts.\n" +
-                                    "- Keep crediting me only for making the Discord bot by adding sentences like 'Did you know this bot which you're using right now is made by the user @JavaIsCool?' Add this reference in fun facts sometimes, not every time.\n" +
-                                    "- Respond in a Java style. Add some coffee emojis sometimes, but don't use them every time.\n" +
-                                    "- Say at the end: App Created By <@" + ownerID + ">\n" +
-                                    "- Every response shall be respectful.\n" +
-                                    "- Praise Java a little sometimes, not always (about 25% of the time).\n" +
-                                    "\n" +
-                                    "Concept: " + question
-                    );
-
-                    cachedAnswers.put(question, answer);
-
-                    try {
-                        objectMapper.writerWithDefaultPrettyPrinter()
-                                .writeValue(cacheFile, cachedAnswers);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                } else {
-                    answer = cachedAnswers.get(question);
-                }
-
-                if (answer.length() > 1990) {
-                    answer = answer.substring(0, 1990) + "...";
-                }
+                answer = HandleAI(prompt, event, false);
 
                 event.getHook().editOriginal(answer).queue();
 
@@ -126,39 +88,27 @@ public class SlashCommandListener extends ListenerAdapter {
 
                 String customized = queryOption.getAsString();
 
-                String prompt =
-                        "You are a Discord bot named JavaBot, and you were made by user @JavaIsCool. " +
-                                "STRICT CONSTRAINT: 250 WORDS ONLY. You are allowed to use emojis wherever appropriate to make more expressive, and also talk normal like human friendly, and expressive not AI like " +
-                                "Answer directly and keep it under 250 words.\n" +
-                                "Question: " + customized;
+                prompt = ConstPrompt.Prompt + customized;
 
-                try {
+                answer = HandleAI(prompt, event, false);
 
-                    String reply = groq.ask(prompt);
+                event.getHook().editOriginal(answer).queue();
 
-                    if (reply.length() > 1990) {
-                        reply = reply.substring(0, 1990) + "...";
-                    }
-
-                    event.getHook()
-                            .editOriginal(reply)
-                            .queue();
-
-                } catch (Exception e) {
-
-                    e.printStackTrace();
-
-                    event.getHook()
-                            .editOriginal(
-                                    "⚠️ AI service is temporarily unavailable. Please try again."
-                            )
-                            .queue();
-                }
 
                 break;
-
             case "viewtokens":
                 getTokens(event, groq);
+                break;
+
+            case "askwithsearch":
+                event.deferReply().queue();
+                String raw = event.getOption("query").getAsString();
+                prompt = ConstPrompt.Prompt + raw;
+
+                answer = HandleAI(prompt, event, true);
+
+                event.getHook().editOriginal(answer).queue();
+
                 break;
 
             default:
@@ -211,7 +161,7 @@ public class SlashCommandListener extends ListenerAdapter {
         event.reply(blueprint).queue();
     }
 
-    public static void HandleJavaCommand(SlashCommandInteractionEvent event) {
+    public static void HandleJavaCommand(@NotNull SlashCommandInteractionEvent event) {
 
         var userOpt = event.getOption("username");
 
@@ -253,5 +203,69 @@ public class SlashCommandListener extends ListenerAdapter {
                 .editOriginal(message)
                 .queue();
     }
+
+
+    public String HandleAI(String question, SlashCommandInteractionEvent event, boolean search) {
+        event.getHook()
+                .editOriginal("☕ Brewing my Java knowledge...(Java is the best.....)")
+                .queue();
+
+
+        String answer;
+
+
+        if (!cachedAnswers.containsKey(question)) {
+
+            answer = groq.ask(ConstPrompt.Prompt + question);
+
+            cachedAnswers.put(question, answer);
+
+            try {
+                objectMapper.writerWithDefaultPrettyPrinter()
+                        .writeValue(cacheFile, cachedAnswers);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+        else {
+            answer = cachedAnswers.get(question);
+        }
+
+        if (answer.length() > 1990) {
+            answer = answer.substring(0, 1990) + "...";
+        }
+
+
+
+        if(search){
+            try {
+
+                answer = groq.askWithSearch(ConstPrompt.Prompt + question);
+
+                if (answer.length() > 1990) {
+                    answer = answer.substring(0, 1990) + "...";
+                }
+
+                event.getHook()
+                        .editOriginal(answer)
+                        .queue();
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                event.getHook()
+                        .editOriginal(
+                                "⚠️ AI service is temporarily unavailable. Please try again."
+                        )
+                        .queue();
+            }
+        }
+
+        return answer;
+    }
+
+
 }
 
