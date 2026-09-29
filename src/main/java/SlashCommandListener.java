@@ -211,9 +211,6 @@ public class SlashCommandListener extends ListenerAdapter {
                 .queue();
 
 
-        String answer;
-
-
         if (!cachedAnswers.containsKey(question)) {
 
             answer = groq.ask(ConstPrompt.Prompt + question);
@@ -243,7 +240,7 @@ public class SlashCommandListener extends ListenerAdapter {
 
                 answer = groq.askWithSearch(ConstPrompt.Prompt + question);
 
-                if (answer.length() > 1990) {
+                if (answer.length() > 1999) {
                     answer = answer.substring(0, 1990) + "...";
                 }
 

@@ -20,7 +20,7 @@ public class DiscordBot {
         jdaBuilder.setActivity(Activity.playing("Coding in Java"));
         JDA jda = jdaBuilder
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MESSAGES)
-                .addEventListeners(new ReadyEventListener(), new MessageListener(), new SlashCommandListener())
+                .addEventListeners(new ReadyEventListener(), new MessageListener(), new SlashCommandListener(), new PrefixListener())
                 .build();
 
         OptionData visibility = new OptionData(
