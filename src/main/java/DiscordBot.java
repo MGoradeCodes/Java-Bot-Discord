@@ -1,5 +1,6 @@
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.interactions.InteractionContextType;
 import net.dv8tion.jda.api.interactions.IntegrationType;
@@ -18,6 +19,7 @@ public class DiscordBot {
 
         JDABuilder jdaBuilder = JDABuilder.createDefault(token);
         jdaBuilder.setActivity(Activity.playing("Coding in Java"));
+        jdaBuilder.setStatus(OnlineStatus.IDLE);
         JDA jda = jdaBuilder
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MESSAGES)
                 .addEventListeners(new ReadyEventListener(), new MessageListener(), new SlashCommandListener(), new PrefixListener())

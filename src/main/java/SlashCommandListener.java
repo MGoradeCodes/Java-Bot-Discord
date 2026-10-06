@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
 import javax.print.attribute.HashDocAttributeSet;
+import java.awt.desktop.AppReopenedEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ public class SlashCommandListener extends ListenerAdapter {
 
     String prompt;
     String answer;
+    String prev;
 
     public SlashCommandListener() {
 
@@ -195,7 +197,8 @@ public class SlashCommandListener extends ListenerAdapter {
         String message =
                 "Current User Input Tokens: " + tokens[0] +
                         "\nUser Output Tokens: " + tokens[1] +
-                        "\nTotal Tokens: " + tokens[2];
+                        "\nTotal Tokens: " + tokens[2] +
+                        "\n remaining tokens: " + tokens[2] + " / 8000";
 
         System.out.println(message);
 
@@ -206,16 +209,44 @@ public class SlashCommandListener extends ListenerAdapter {
 
 
     public String HandleAI(String question, SlashCommandInteractionEvent event, boolean search) {
+
         event.getHook()
                 .editOriginal("☕ Brewing my Java knowledge...(Java is the best.....)")
                 .queue();
 
+        // If search is true, bypass the normal cache/context and hit the search endpoint directly
+        if (search) {
+            try {
+                answer = groq.askWithSearch(ConstPrompt.Prompt + question);
 
-        if (!cachedAnswers.containsKey(question)) {
+                if (answer.length() > 1999) {
+                    answer = answer.substring(0, 1990) + "...";
+                }
 
-            answer = groq.ask(ConstPrompt.Prompt + question);
+                event.getHook().editOriginal(answer).queue();
+                return answer;
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                event.getHook()
+                        .editOriginal("⚠️ AI service is temporarily unavailable. Please try again.")
+                        .queue();
+                return "Error fetching answer.";
+            }
+        }
+    if (!cachedAnswers.containsKey(question)) {
+
+            System.out.println("Current Context before calling Groq:\n" + prev);
+
+
+            answer = groq.ask("Context till now: (ignore if empty) { : \n" + prev + " } \n Now once context is done read this prompt and answer: " + ConstPrompt.Prompt + question);
+
 
             cachedAnswers.put(question, answer);
+
+            prev = "Previous Context: \n This was question asked previously: " + question + "\n and this is what you had answered: " + answer;
+
+            System.out.println("\n\n\n\n\n\n\nNew Context Created:\n" + prev);
 
             try {
                 objectMapper.writerWithDefaultPrettyPrinter()
@@ -224,45 +255,21 @@ public class SlashCommandListener extends ListenerAdapter {
                 e.printStackTrace();
             }
 
-        }
-        else {
+        } else {
+            // Cache hit
             answer = cachedAnswers.get(question);
         }
 
+        // Discord message length limit safety check (Max 2000 chars)
         if (answer.length() > 1990) {
             answer = answer.substring(0, 1990) + "...";
         }
 
-
-
-        if(search){
-            try {
-
-                answer = groq.askWithSearch(ConstPrompt.Prompt + question);
-
-                if (answer.length() > 1999) {
-                    answer = answer.substring(0, 1990) + "...";
-                }
-
-                event.getHook()
-                        .editOriginal(answer)
-                        .queue();
-
-            } catch (Exception e) {
-
-                e.printStackTrace();
-
-                event.getHook()
-                        .editOriginal(
-                                "⚠️ AI service is temporarily unavailable. Please try again."
-                        )
-                        .queue();
-            }
-        }
+        // Send the non-search answer back to Discord
+        event.getHook().editOriginal(answer).queue();
 
         return answer;
     }
-
 
 }
 
